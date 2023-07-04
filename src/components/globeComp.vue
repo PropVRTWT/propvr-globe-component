@@ -31,6 +31,8 @@ onMounted(()=>{
           el.innerHTML = markerSvg;
           el.style.color = d.color;
           el.style.width = `${d.size}px`;
+          el.style.pointerEvents = 'auto';
+          el.addEventListener('click', handleClick);
           return el;
         });
 
@@ -73,7 +75,9 @@ onMounted(()=>{
     requestAnimationFrame(animate);
   })();
 })
-
+function handleClick(event) {
+  console.log("insideee")
+}
 </script>
 
 <template>
