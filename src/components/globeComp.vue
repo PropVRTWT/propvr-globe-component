@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import * as THREE from 'three';
 import  ThreeGlobe  from 'three-globe';
@@ -40,6 +40,7 @@ onMounted(()=>{
       r.domElement.style.position = 'absolute';
       r.domElement.style.top = '0px';
       r.domElement.style.pointerEvents = 'none';
+      r.domElement.style.cursor = 'pointer'
     }
     globeViz.value.appendChild(r.domElement);
   });    
@@ -52,16 +53,22 @@ onMounted(()=>{
   camera.updateProjectionMatrix();
   camera.position.z = 500;
 
-  const tbControls = new TrackballControls(camera, renderers[0].domElement);
-  tbControls.minDistance = 101;
-  tbControls.rotateSpeed = 5;
-  tbControls.zoomSpeed = 0.8;
+  const controls = new OrbitControls(camera, renderers[0].domElement);
+  // camera.position.set(0, 0, 7);
+  controls.target.set(0, 0, 0);
+  controls.enablePan = false;
+  controls.minDistance = 300;
+  controls.maxDistance = 280;
+  controls.enableDamping = true;
+  controls.autoRotate = true;
+  controls.autoRotateSpeed *= 0.25;
+
 
   Globe.setPointOfView(camera.position, Globe.position);
-  tbControls.addEventListener('change', () => Globe.setPointOfView(camera.position, Globe.position));
+  controls.addEventListener('change', () => Globe.setPointOfView(camera.position, Globe.position));
 
   (function animate() {
-    tbControls.update();
+    controls.update();
     renderers.forEach(r => r.render(scene, camera));
     requestAnimationFrame(animate);
   })();
@@ -70,5 +77,5 @@ onMounted(()=>{
 </script>
 
 <template>
-  <div style="height:100%;width:100%;overflow: hidden;" id="globeViz" ref="globeViz"></div>
+  <div style="height:100%;width:100%;overflow: hidden;cursor:grab;" id="globeViz" ref="globeViz"></div>
 </template>
