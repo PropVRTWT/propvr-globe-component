@@ -1,38 +1,36 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted,defineEmits ,defineProps} from 'vue';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
-import * as THREE from 'three';
+import {AmbientLight,WebGLRenderer,Scene,PerspectiveCamera,DirectionalLight} from 'three'
 import  ThreeGlobe  from 'three-globe';
 const globeViz = ref(null);
-const renderers = [new THREE.WebGLRenderer(), new CSS2DRenderer()];
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera();
-
+const renderers = [new WebGLRenderer(), new CSS2DRenderer()];
+const scene = new Scene();
+const camera = new PerspectiveCamera();
+const usedIds = new Set();
+const props=defineProps(['gData','markerSvg'])
+const emits = defineEmits(['emitClickData'])
 onMounted(()=>{
-  const markerSvg = `<svg viewBox="-4 0 36 36">
-      <path fill="currentColor" d="M14,0 C21.732,0 28,5.641 28,12.6 C28,23.963 14,36 14,36 C14,36 0,24.064 0,12.6 C0,5.641 6.268,0 14,0 Z"></path>
-      <circle fill="black" cx="14" cy="14" r="7"></circle>
-    </svg>`;
-  const N = 30;
-  const gData = [...Array(N).keys()].map(() => ({
-        lat: (Math.random() - 0.5) * 180,
-        lng: (Math.random() - 0.5) * 360,
-        size: 7 + Math.random() * 30,
-        color: ['red', 'white', 'blue', 'green'][Math.round(Math.random() * 3)]
-    }));
 
   const Globe = new ThreeGlobe()
         .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
         .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
-        .htmlElementsData(gData)
+        .htmlElementsData(props.gData)
         .htmlElement(d => {
+          let id;
+          do {
+            id = generateRandomId();
+          } while (usedIds.has(id));
+          
+          usedIds.add(id);
           const el = document.createElement('div');
-          el.innerHTML = markerSvg;
+          el.innerHTML = props.markerSvg;
           el.style.color = d.color;
           el.style.width = `${d.size}px`;
           el.style.pointerEvents = 'auto';
-          el.addEventListener('click', handleClick);
+          el.id=id
+          el.addEventListener('click', event=>handleClick(el.id));
           return el;
         });
 
@@ -48,8 +46,8 @@ onMounted(()=>{
   });    
 
   scene.add(Globe);
-  scene.add(new THREE.AmbientLight(0xcccccc));
-  scene.add(new THREE.DirectionalLight(0xffffff, 0.6));
+  scene.add(new AmbientLight(0xcccccc));
+  scene.add(new DirectionalLight(0xffffff, 0.6));
 
   camera.aspect = window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
@@ -74,10 +72,16 @@ onMounted(()=>{
     renderers.forEach(r => r.render(scene, camera));
     requestAnimationFrame(animate);
   })();
+
+
+
+  function generateRandomId() {
+    return Math.random().toString(36).substr(2, 9);
+  }
+  function handleClick(id) {
+   emits('emitClickData',id);
+  }
 })
-function handleClick(event) {
-  console.log("insideee")
-}
 </script>
 
 <template>
