@@ -1,7 +1,14 @@
-# Vue 3 + Vite
+# propVR Globe Component
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+#Installation
+1. npm i propvr-globe-component@latest --save
 
-## Recommended IDE Setup
+2. import {globeComp} from 'propvr-globe-component';
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+3. <globeComp :Data="gData" :markerIcon="markerSvg"  @emitClickData="emitClickData"/>
+    
+    Data -> Pass the list of city co-ordinates with corresponding ids.
+    markerIcon -> Pass the icon's svg as string which will be used to indicate the city in the globe.
+    
+    emitclickData -> Will emit the city Id which is clicked in the globe by user. 
+
