@@ -3,10 +3,26 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/globe.umd.js",
+  "module": "./dist/globe.es.js",
+  "exports": {
+    "./dist/*.css": {
+      "import": "./dist/*.css",
+      "require": "./dist/*.css"
+    },
+    ".": {
+      "import": "./dist/globe.es.js",
+      "require": "./dist/globe.umd.js"
+    }
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "npmpublish": "npm run build && npm version patch && npm publish"
   },
   "dependencies": {
     "three": "^0.154.0",

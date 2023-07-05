@@ -8,28 +8,21 @@ const globeViz = ref(null);
 const renderers = [new WebGLRenderer(), new CSS2DRenderer()];
 const scene = new Scene();
 const camera = new PerspectiveCamera();
-const usedIds = new Set();
-const props=defineProps(['gData','markerSvg'])
+const props=defineProps(['Data','markerIcon'])
 const emits = defineEmits(['emitClickData'])
 onMounted(()=>{
 
   const Globe = new ThreeGlobe()
         .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
         .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
-        .htmlElementsData(props.gData)
+        .htmlElementsData(props.Data)
         .htmlElement(d => {
-          let id;
-          do {
-            id = generateRandomId();
-          } while (usedIds.has(id));
-          
-          usedIds.add(id);
           const el = document.createElement('div');
-          el.innerHTML = props.markerSvg;
+          el.innerHTML = props.markerIcon;
           el.style.color = d.color;
           el.style.width = `${d.size}px`;
           el.style.pointerEvents = 'auto';
-          el.id=id
+          el.id=d.id
           el.addEventListener('click', event=>handleClick(el.id));
           return el;
         });
@@ -75,12 +68,12 @@ onMounted(()=>{
 
 
 
-  function generateRandomId() {
-    return Math.random().toString(36).substr(2, 9);
-  }
+
+
   function handleClick(id) {
    emits('emitClickData',id);
   }
+
 })
 </script>
 
