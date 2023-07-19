@@ -9,7 +9,12 @@ const renderers = [new WebGLRenderer(), new CSS2DRenderer()];
 const scene = new Scene();
 const camera = new PerspectiveCamera();
 const props=defineProps(['Data','markerIcon'])
-const emits = defineEmits(['emitClickData'])
+const emits = defineEmits(['emitClickData','ZoomInStop'])
+const zoom = ref(1);
+const targetZoom = ref(1); // Zoom level to animate to on marker click
+const animationDuration = 800; // Duration of the animation in milliseconds
+let animationStartTime = 0; // Variable to store the animation start time
+const globeOpacity = ref(1);
 onMounted(()=>{
 
   const Globe = new ThreeGlobe()
@@ -61,17 +66,51 @@ onMounted(()=>{
   controls.addEventListener('change', () => Globe.setPointOfView(camera.position, Globe.position));
 
   (function animate() {
-    controls.update();
-    renderers.forEach(r => r.render(scene, camera));
-    requestAnimationFrame(animate);
-  })();
+  controls.update();
+
+  // Calculate the animation progress
+  const now = Date.now();
+  const elapsed = now - animationStartTime;
+  const progress = Math.min(elapsed / animationDuration, 1);
+
+  // Apply the zoom animation
+  zoom.value = 1 + (targetZoom.value - 1) * progress;
+  camera.zoom = zoom.value;
+  camera.updateProjectionMatrix();
+
+  // Apply fade-out effect to the globe
+  if (progress < 1) {
+    const initialOpacity = 1;
+    const finalOpacity = 0.3; // Set the final opacity you desire (e.g., 0 for fully transparent, 0.5 for semi-transparent)
+    globeOpacity.value = initialOpacity + (finalOpacity - initialOpacity) * progress;
+  } else {
+    // Reset opacity after animation ends
+    globeOpacity.value = 1;
+    if (animationStartTime !== 0) {
+      emits('ZoomInStop');
+      animationStartTime = 0; // Reset animation start time to prevent further console logs
+    }
+  }
+
+  // Set the opacity of the globe
+  Globe.globeMaterial().opacity = globeOpacity.value;
+
+  renderers.forEach((r) => r.render(scene, camera));
+  requestAnimationFrame(animate);
+})();
 
 
 
 
 
   function handleClick(id) {
-   emits('emitClickData',id);
+// Start the animation when a marker is clicked
+animationStartTime = Date.now();
+
+// Update the targetZoom based on your marker data or logic
+targetZoom.value = 2;
+
+emits('emitClickData', id);
   }
 
 })

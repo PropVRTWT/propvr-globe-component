@@ -21,9 +21,12 @@ const markerSvg = `<svg viewBox="-4 0 36 36">
 function emitClickData(id){
   console.log(id)
 }
+function ZoomInStop(){
+  console.log("Zoom-in and fade-out animation completed!");
+}
 </script>
 
 <template>
-  <globeComp :Data="gData" :markerIcon="markerSvg"  @emitClickData="emitClickData" style="height:100%;width:100%;overflow: hidden" />
+  <globeComp :Data="gData" :markerIcon="markerSvg" @ZoomInStop="ZoomInStop"  @emitClickData="emitClickData" style="height:100%;width:100%;overflow: hidden" />
 </template>
 
