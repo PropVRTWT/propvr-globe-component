@@ -16,7 +16,7 @@ const globeViz = ref(null);
 const renderers = [new WebGLRenderer(), new CSS2DRenderer()];
 const scene = new Scene();
 const camera = new PerspectiveCamera();
-const props=defineProps(['Data','markerIcon'])
+const props=defineProps(['Data','markerIcon', 'settings'])
 const emits = defineEmits(['emitClickData']);
 let currentElement = 0;
 let startAnimation = false;
@@ -35,7 +35,17 @@ onMounted(()=>{
         .htmlElement(d => {
           const el = document.createElement('div');
           el.innerHTML = props.markerIcon;
-          el.style.color = d.color;
+          if(d.name){
+            const textChild = document.createElement(`p`);
+            textChild.innerHTML = d.name;
+            props.settings.textClass.split(" ").map(className=>{
+              textChild.classList.add(className)
+            })
+            
+            el.appendChild(textChild)
+          }
+         
+          // el.style.color = d.color;
           el.style.width = `${d.size}px`;
           el.style.pointerEvents = 'auto';
           el.id=d.id

@@ -1,29 +1,57 @@
 <script setup>
 import globeComp from './components/globeComp.vue'
-const N = 30;
-const usedIds = new Set();
-const gData = [...Array(N).keys()].map(() => ({
-    id: generateRandomId(),
-    lat: (Math.random() - 0.5) * 180,
-    lng: (Math.random() - 0.5) * 360,
-    size: 7 + Math.random() * 30,
-    color: ['red', 'white', 'blue', 'green'][Math.round(Math.random() * 3)]
-}));
+import { ref } from 'vue';
+const markerIcon = ref(false);
 
-function generateRandomId() {
-    return Math.random().toString(36).substr(2, 9);
+let requestOptions = {
+      method: "GET",
+      redirect: "follow",
+    };
+
+let url = 'https://storagecdn.propvr.ai/DevAssets%2FDigitalTwinApp%2FCoordinates_Icon.svg?alt=media';
+fetch(url, requestOptions)
+  .then((response) => response.text())
+    .then((result) => {
+        console.log(result)
+        markerIcon.value = result;
+      })
+    .catch((error) => console.log("error", error));
+
+const gData = ref([
+      {
+        id:"88115",
+        "lat" : 23.677746332552502,
+        "lng" : 44.06750079798167,
+        "name":"Saudi Arabia",
+        "size":"fit-content",
+      }
+
+])
+
+const settings = {
+  "hoverColor":"",
+  "defaultColor":"",
+  "textClass":"white h4 m-0",
 }
 
-const markerSvg = `<svg viewBox="-4 0 36 36">
-  <path fill="currentColor" d="M14,0 C21.732,0 28,5.641 28,12.6 C28,23.963 14,36 14,36 C14,36 0,24.064 0,12.6 C0,5.641 6.268,0 14,0 Z"></path>
-  <circle fill="black" cx="14" cy="14" r="7"></circle>
-</svg>`;
 function emitClickData(id){
   console.log(id)
 }
 </script>
 
 <template>
-  <globeComp :Data="gData" :markerIcon="markerSvg"  @emitClickData="emitClickData" style="height:100%;width:100%;overflow: hidden" />
+  <globeComp v-if="markerIcon" :Data="gData" :settings="settings" :markerIcon="markerIcon"  @emitClickData="emitClickData" style="height:100%;width:100%;overflow: hidden" />
 </template>
+
+<style>
+.h4{
+  font-size: min(max(14px, calc(0.875rem + ((1vw - 3px) * 0.1327))), 17px);
+}
+.white{
+ color: #fff;
+}
+.m-0{
+  margin:0 !important;
+}
+</style>
 
