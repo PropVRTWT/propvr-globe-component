@@ -33,7 +33,7 @@ onMounted(()=>{
   renderers[0].toneMapping=ACESFilmicToneMapping;
   renderers[0].toneMappingExposure=1.5;
   const Globe = new ThreeGlobe()
-        .globeImageUrl('https://storagecdn.propvr.ai/DevAssets%2Fglobe_v1_image%2Fearth2.jpg?alt=media')
+        .globeImageUrl('/earthTexture.jpg')
         // .bumpImageUrl('https://storagecdn.propvr.ai/DevAssets%2FEARTH_Refl.jpg?alt=media')
         .htmlElementsData(props.Data)
         .htmlElement(d => {
@@ -67,17 +67,17 @@ if(node instanceof Mesh){
 globeMesh.value.material=new MeshStandardMaterial();
 const GlobeMaterial = globeMesh.value.material;
 // GlobeMaterial.color = new Color(0x3a228a);
-new TextureLoader().load('https://storagecdn.propvr.ai/DevAssets%2Fglobe_v1_image%2Fearthemissive1.jpg?alt=media', texture => {
+new TextureLoader().load('/earthEmissive.jpg', texture => {
     GlobeMaterial.emissiveMap  = texture;
-    GlobeMaterial.emissiveIntensity = 1;
+    GlobeMaterial.emissiveIntensity = 0.5;
     GlobeMaterial.emissive = new Color(1,1,1)
 });
 
-new TextureLoader().load('https://storagecdn.propvr.ai/DevAssets%2Fglobe_v1_image%2FEarth-normal.jpg?alt=media', texture => {
+new TextureLoader().load('/earthNormal.jpg', texture => {
     GlobeMaterial.normalMap  = texture;
 });
 
-new TextureLoader().load('https://storagecdn.propvr.ai/DevAssets%2Fglobe_v1_image%2FRoughness3.jpg?alt=media', texture => {
+new TextureLoader().load('/earthRough.jpg', texture => {
     GlobeMaterial.roughnessMap   = texture;
 });
 
@@ -144,15 +144,15 @@ console.log(GlobeMaterial)
 
   const controls = new OrbitControls(camera, renderers[0].domElement);
   console.log(controls)
-  // camera.position.set(131.88064239814327, 64.1848257090222, 120.89015872538002);
-  // controls.target.set(-13.657160256049494, 14.83606980678348, 121.60382806417424);
-  controls.target.set(0,0,0)
-  controls.enablePan = false;
-  controls.minDistance = 300;
-  controls.maxDistance = 280;
-  controls.enableDamping = true;
-  controls.autoRotate = false;
-  controls.autoRotateSpeed *= 0.25;
+  camera.position.set(131.88064239814327, 64.1848257090222, 120.89015872538002);
+  controls.target.set(-13.657160256049494, 14.83606980678348, 121.60382806417424);
+  // controls.target.set(0,0,0)
+  // controls.enablePan = false;
+  // controls.minDistance = 300;
+  // controls.maxDistance = 280;
+  // controls.enableDamping = true;
+  // controls.autoRotate = false;
+  // controls.autoRotateSpeed *= 0.25;
 
 
   Globe.setPointOfView(camera.position, Globe.position);
