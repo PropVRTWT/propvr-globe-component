@@ -244,9 +244,10 @@ function loaderImageLoaded(){
 </script>
 
 <template>
-  
-  <div v-if="hideImage" style="height:100%;width:100%;overflow: hidden;position: absolute;top:0px;left:0px;z-index: 5;">
-    <img @load="loaderImageLoaded" src="https://storagecdn.propvr.tech/KAFD_Assets%2FGlobe%2FinitialBg.jpg?alt=media" style="height:100%;width:100%;object-fit: cover;"/>
+  <div style="height:100%;width:100%;overflow: hidden;position: relative;">
+    <div v-if="hideImage" style="height:100%;width:100%;overflow: hidden;position: absolute;top:0px;left:0px;z-index: 5;">
+      <img @load="loaderImageLoaded" src="https://storagecdn.propvr.tech/KAFD_Assets%2FGlobe%2FinitialBg.jpg?alt=media" style="height:100%;width:100%;object-fit: cover;"/>
+    </div>
+    <div style="height:100%;width:100%;overflow: hidden;cursor:grab;" id="globeViz" ref="globeViz"></div>
   </div>
-  <div style="height:100%;width:100%;overflow: hidden;cursor:grab;" id="globeViz" ref="globeViz"></div>
 </template>
