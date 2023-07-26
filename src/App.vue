@@ -12,7 +12,6 @@ let url = 'https://storagecdn.propvr.ai/DevAssets%2FDigitalTwinApp%2FCoordinates
 fetch(url, requestOptions)
   .then((response) => response.text())
     .then((result) => {
-        console.log(result)
         markerIcon.value = result;
       })
     .catch((error) => console.log("error", error));
@@ -37,10 +36,14 @@ const settings = {
 function emitClickData(id){
   console.log(id)
 }
+
+function imageloaded(){
+  
+}
 </script>
 
 <template>
-  <globeComp v-if="markerIcon" :Data="gData" :settings="settings" :markerIcon="markerIcon"  @emitClickData="emitClickData" style="height:100%;width:100%;overflow: hidden" />
+  <globeComp v-if="markerIcon" :Data="gData" :settings="settings" :markerIcon="markerIcon" @loaderImageLoaded="imageloaded"  @emitClickData="emitClickData" style="height:100%;width:100%;overflow: hidden" />
 </template>
 
 <style>
