@@ -27,6 +27,7 @@
   "dependencies": {
     "three": "^0.154.0",
     "three-globe": "^2.27.4",
+    "tweenjs": "^1.0.2",
     "vue": "^3.2.47"
   },
   "devDependencies": {

@@ -8,11 +8,14 @@ import {
   TextureLoader,PointLight,
   MeshBasicMaterial,SphereGeometry,
   Mesh,
-  Color
+  Color,
+MeshStandardMaterial,WebGLCubeRenderTarget, ACESFilmicToneMapping, CineonToneMapping, RepeatWrapping, EquirectangularReflectionMapping, SRGBColorSpace
   } from 'three';
 import { Lensflare,LensflareElement } from 'three/examples/jsm/objects/Lensflare.js';
 import  ThreeGlobe  from 'three-globe';
+import * as TWEEN from '@tweenjs/tween.js'
 const globeViz = ref(null);
+const globeMesh= ref();
 const renderers = [new WebGLRenderer(), new CSS2DRenderer()];
 const scene = new Scene();
 const camera = new PerspectiveCamera();
@@ -27,7 +30,8 @@ let animationStartTime = 0; // Variable to store the animation start time
 let globeOpacity = 1;
 
 onMounted(()=>{
-
+  renderers[0].toneMapping=ACESFilmicToneMapping;
+  renderers[0].toneMappingExposure=1.5;
   const Globe = new ThreeGlobe()
         .globeImageUrl('https://storagecdn.propvr.ai/DevAssets%2Fglobe_v1_image%2Fearth2.jpg?alt=media')
         // .bumpImageUrl('https://storagecdn.propvr.ai/DevAssets%2FEARTH_Refl.jpg?alt=media')
@@ -52,9 +56,17 @@ onMounted(()=>{
           el.addEventListener('click', event=>handleClick(el.id));
           return el;
         });
-// console.log(Globe)
-// console.log(Globe.globeMaterial())
-const GlobeMaterial = Globe.globeMaterial();
+Globe.showAtmosphere(true);
+Globe.atmosphereColor("#c6e7f7")
+Globe.atmosphereAltitude(0.15)
+Globe.traverse((node)=>{
+if(node instanceof Mesh){
+  globeMesh.value=node;
+}
+})
+globeMesh.value.material=new MeshStandardMaterial();
+const GlobeMaterial = globeMesh.value.material;
+// GlobeMaterial.color = new Color(0x3a228a);
 new TextureLoader().load('https://storagecdn.propvr.ai/DevAssets%2Fglobe_v1_image%2Fearthemissive1.jpg?alt=media', texture => {
     GlobeMaterial.emissiveMap  = texture;
     GlobeMaterial.emissiveIntensity = 1;
@@ -68,6 +80,20 @@ new TextureLoader().load('https://storagecdn.propvr.ai/DevAssets%2Fglobe_v1_imag
 new TextureLoader().load('https://storagecdn.propvr.ai/DevAssets%2Fglobe_v1_image%2FRoughness3.jpg?alt=media', texture => {
     GlobeMaterial.roughnessMap   = texture;
 });
+
+const targetCube = new WebGLCubeRenderTarget(512, 512);
+  new TextureLoader().load( "/spaceenv.jpg", texture => {
+       // create a cube texture from the panorama
+       let cubeTex = targetCube.fromEquirectangularTexture(renderers[0], texture);       
+       GlobeMaterial.envMap=cubeTex.texture;
+      //  GlobeMaterial.envMap.rotation=45
+    })
+
+   
+GlobeMaterial.roughness=0.5
+//GlobeMaterial.metalness=0.1
+GlobeMaterial.envMapIntensity=2
+
 console.log(GlobeMaterial)
  
   renderers.forEach((r, idx) => {
@@ -82,28 +108,32 @@ console.log(GlobeMaterial)
   });    
 
   scene.add(Globe);
-  scene.add(new AmbientLight(0xcccccc));
+  //scene.add(new AmbientLight(0xcccccc));
   // scene.add(new DirectionalLight(0xffffff, 0.6));
 
+  // const textureLoader = new TextureLoader();
+  // const texture = textureLoader.load('https://www.shutterstock.com/image-illustration/360-degree-interstellar-cloud-dust-600w-1970651411.jpg'); 
+  // const material = new MeshBasicMaterial({ map: texture });
+  // const geometry = new SphereGeometry( 500, 60, 40 );
+  // geometry.scale( -1, 1, 1 );
+  // const mesh = new Mesh(geometry, material);
+  // //console.log(mesh)
+  // scene.add(mesh);
   const textureLoader = new TextureLoader();
-  const texture = textureLoader.load('https://storagecdn.propvr.ai/DevAssets%2FSpace_4K.jpg?alt=media'); 
-  const material = new MeshBasicMaterial({ map: texture });
-  const geometry = new SphereGeometry( 500, 60, 40 );
-  geometry.scale( -1, 1, 1 );
-  const mesh = new Mesh(geometry, material);
-  console.log(mesh)
-  scene.add(mesh);
+  const textureEquirec = textureLoader.load( '/spacebg.jpg' );
+				textureEquirec.mapping = EquirectangularReflectionMapping;
+				textureEquirec.colorSpace = SRGBColorSpace;
+        scene.background = textureEquirec;
 
 
 
-
-  const sunLight = new PointLight( 0xffffff, 0.1, 20000 );
+  const sunLight = new PointLight( 0xffffff, 0.2, 20000 );
   const sunTextureLoader = new TextureLoader();
   const textureFlare = sunTextureLoader.load("https://storagecdn.propvr.ai/DevAssets%2Fsun3.webp?alt=media");
 	const textureFlare0 = sunTextureLoader.load( 'https://storagecdn.propvr.ai/DevAssets%2Flensflare.png?alt=media' );
   const lensflare = new Lensflare();
   lensflare.addElement( new LensflareElement( textureFlare, 512, 0 ) );
-  lensflare.addElement( new LensflareElement( textureFlare0, 1024, 0 ) );
+  lensflare.addElement( new LensflareElement( textureFlare0, 512, 0 ) );
   sunLight.position.set( 250, 90, 50 );
   sunLight.add( lensflare );
   scene.add( sunLight );
@@ -113,8 +143,10 @@ console.log(GlobeMaterial)
   camera.position.z = 500;
 
   const controls = new OrbitControls(camera, renderers[0].domElement);
-  // camera.position.set(0, 0, 7);
-  controls.target.set(0, 0, 0);
+  console.log(controls)
+  // camera.position.set(131.88064239814327, 64.1848257090222, 120.89015872538002);
+  // controls.target.set(-13.657160256049494, 14.83606980678348, 121.60382806417424);
+  controls.target.set(0,0,0)
   controls.enablePan = false;
   controls.minDistance = 300;
   controls.maxDistance = 280;
