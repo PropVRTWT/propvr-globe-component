@@ -59,7 +59,6 @@ onMounted(() => {
         })
       })
   );
-  
   Globe.showAtmosphere(true);
   Globe.atmosphereColor("#c6e7f7")
   Globe.atmosphereAltitude(0.15)
@@ -225,9 +224,10 @@ onMounted(() => {
 
   Promise.all(texturePromises).then(() => {
     console.log('All textures loaded successfully!');
-    hideImage.value = false;
+    
     //initial camera and marker animation
     setTimeout(()=>{
+      hideImage.value = false;
       animateCameraPosition(camera.position, { x: 197.58794914248855, y: 79.45985245939976, z: 211.29395211599356 }, 2000)
       animateCameraPosition(controls.target, { x: 0, y: 0, z: 0 }, 2000);
       animateOpacity(svgIcon.value, { opacity: 0 }, { opacity: 1 }, 2000);
