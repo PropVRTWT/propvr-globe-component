@@ -211,15 +211,7 @@ onMounted(() => {
 
   //animate to city
   const handleClick = (id) => {
-
-    Promise.all([
-    animateCameraPosition(camera.position, { "x": 80.66770691334082, "y": 39.40691406419208, "z": 86.68052099645045 }, 2000, false),
-    animateCameraPosition(controls.target, { "x": -0.14623203298954673, "y": 37.84872465037691, "z": -0.879793351262042 }, 2000, false),
-    animateOpacity(globeViz.value, { opacity: 1 }, { opacity: 0 }, 2000)
-    ]).then(()=>{
-      emits('emitClickData',id);
-    })
-    
+    emits('emitClickData',id);
   }
 
   Promise.all(texturePromises).then(() => {
@@ -239,6 +231,16 @@ onMounted(() => {
 
 function loaderImageLoaded(){
   emits('loaderImageLoaded')
+}
+
+export function animateFunction(){
+  Promise.all([
+    animateCameraPosition(camera.position, { "x": 80.66770691334082, "y": 39.40691406419208, "z": 86.68052099645045 }, 2000, false),
+    animateCameraPosition(controls.target, { "x": -0.14623203298954673, "y": 37.84872465037691, "z": -0.879793351262042 }, 2000, false),
+    animateOpacity(globeViz.value, { opacity: 1 }, { opacity: 0 }, 2000)
+    ]).then(()=>{
+      
+  })
 }
 
 </script>
