@@ -22,6 +22,7 @@ const props = defineProps(['Data', 'markerIcon', 'settings'])
 const emits = defineEmits(['emitClickData','loaderImageLoaded']);
 const texturePromises = [];
 const hideImage = ref(true);
+let controls = 0;
 
 onMounted(() => {
   renderers[0].toneMapping = ACESFilmicToneMapping;
@@ -142,7 +143,7 @@ onMounted(() => {
   camera.updateProjectionMatrix();
   camera.position.z = 500;
 
-  const controls = new OrbitControls(camera, renderers[0].domElement);
+  controls = new OrbitControls(camera, renderers[0].domElement);
   camera.position.set(131.88064239814327, 64.1848257090222, 120.89015872538002);
   controls.target.set(-13.657160256049494, 14.83606980678348, 121.60382806417424);
   //  controls.target.set(0,0,0)
@@ -156,6 +157,34 @@ onMounted(() => {
 
   Globe.setPointOfView(camera.position, Globe.position);
   controls.addEventListener('change', () => Globe.setPointOfView(camera.position, Globe.position));
+
+  
+
+  (function animate() {
+    controls.update();
+    renderers.forEach(r => r.render(scene, camera));
+    requestAnimationFrame(animate); // enable mouse drag
+  })();
+
+  //animate to city
+  const handleClick = (id) => {
+        emits('emitClickData',id);
+  }
+
+  Promise.all(texturePromises).then(() => {
+    console.log('All textures loaded successfully!');
+    
+    //initial camera and marker animation
+    setTimeout(()=>{
+      hideImage.value = false;
+      animateCameraPosition(camera.position, { x: 197.58794914248855, y: 79.45985245939976, z: 211.29395211599356 }, 2000)
+      animateCameraPosition(controls.target, { x: 0, y: 0, z: 0 }, 2000);
+      animateOpacity(svgIcon.value, { opacity: 0 }, { opacity: 1 }, 2000);
+    },1000)
+  
+  });
+
+})
 
   const animateCameraPosition = (currentPosition, targetPosition, duration, setDistance = true) => {
     return new Promise((resolve)=>{
@@ -202,32 +231,6 @@ onMounted(() => {
     })
 
   }
-
-  (function animate() {
-    controls.update();
-    renderers.forEach(r => r.render(scene, camera));
-    requestAnimationFrame(animate); // enable mouse drag
-  })();
-
-  //animate to city
-  const handleClick = (id) => {
-        emits('emitClickData',id);
-  }
-
-  Promise.all(texturePromises).then(() => {
-    console.log('All textures loaded successfully!');
-    
-    //initial camera and marker animation
-    setTimeout(()=>{
-      hideImage.value = false;
-      animateCameraPosition(camera.position, { x: 197.58794914248855, y: 79.45985245939976, z: 211.29395211599356 }, 2000)
-      animateCameraPosition(controls.target, { x: 0, y: 0, z: 0 }, 2000);
-      animateOpacity(svgIcon.value, { opacity: 0 }, { opacity: 1 }, 2000);
-    },1000)
-  
-  });
-
-})
 
 function loaderImageLoaded(){
   emits('loaderImageLoaded')
