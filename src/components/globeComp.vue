@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, defineEmits, defineProps } from 'vue';
+import { ref, onMounted, defineEmits, defineProps,defineExpose } from 'vue';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import {
@@ -211,7 +211,7 @@ onMounted(() => {
 
   //animate to city
   const handleClick = (id) => {
-    emits('emitClickData',id);
+        emits('emitClickData',id);
   }
 
   Promise.all(texturePromises).then(() => {
@@ -233,7 +233,7 @@ function loaderImageLoaded(){
   emits('loaderImageLoaded')
 }
 
-export function animateFunction(){
+const startAnimate = ()=>{
   Promise.all([
     animateCameraPosition(camera.position, { "x": 80.66770691334082, "y": 39.40691406419208, "z": 86.68052099645045 }, 2000, false),
     animateCameraPosition(controls.target, { "x": -0.14623203298954673, "y": 37.84872465037691, "z": -0.879793351262042 }, 2000, false),
@@ -242,6 +242,10 @@ export function animateFunction(){
       
   })
 }
+
+defineExpose({
+  startAnimate
+})
 
 </script>
 
