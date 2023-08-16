@@ -19,9 +19,8 @@ const renderers = [new WebGLRenderer(), new CSS2DRenderer()];
 const scene = new Scene();
 const camera = new PerspectiveCamera();
 const props = defineProps(['Data', 'markerIcon', 'settings'])
-const emits = defineEmits(['emitClickData','loaderImageLoaded', 'initialAnimationEnd', 'selectedAnimationEnd']);
+const emits = defineEmits(['emitClickData','loaderImageLoaded', 'initialAnimationEnd', 'selectedAnimationEnd','allTextureLoaded']);
 const texturePromises = [];
-const hideImage = ref(true);
 let controls = 0;
 
 onMounted(() => {
@@ -175,15 +174,7 @@ onMounted(() => {
     console.log('All textures loaded successfully!');
     
     //initial camera and marker animation
-    setTimeout(()=>{
-      hideImage.value = false;
-      Promise.all([
-      animateCameraPosition(camera.position, { x: 197.58794914248855, y: 79.45985245939976, z: 211.29395211599356 }, 2000),
-      animateCameraPosition(controls.target, { x: 0, y: 0, z: 0 }, 2000),
-      animateOpacity(svgIcon.value, { opacity: 0 }, { opacity: 1 }, 2000)]).then(()=>{
-        emits('initialAnimationEnd');
-      })
-    },1000)
+    emits("allTextureLoaded");
   
   });
 
@@ -249,17 +240,24 @@ const startAnimate = ()=>{
   })
 }
 
+async function startInitialAnimation(){
+
+  Promise.all([
+      animateCameraPosition(camera.position, { x: 197.58794914248855, y: 79.45985245939976, z: 211.29395211599356 }, 2000),
+      animateCameraPosition(controls.target, { x: 0, y: 0, z: 0 }, 2000),
+      animateOpacity(svgIcon.value, { opacity: 0 }, { opacity: 1 }, 2000)]).then(()=>{
+        emits('initialAnimationEnd');
+      })
+
+}
+
 defineExpose({
-  startAnimate
+  startAnimate,
+  startInitialAnimation
 })
 
 </script>
 
 <template>
-  <div style="height:100%;width:100%;overflow: hidden;position: relative;">
-    <div v-if="hideImage" style="height:100%;width:100%;overflow: hidden;position: absolute;top:0px;left:0px;z-index: 5;">
-      <img @load="loaderImageLoaded" src="https://storagecdn.propvr.tech/KAFD_Assets%2FGlobe%2FinitialBg.jpg?alt=media" style="height:100%;width:100%;object-fit: cover;"/>
-    </div>
     <div style="height:100%;width:100%;overflow: hidden;cursor:grab;" id="globeViz" ref="globeViz"></div>
-  </div>
 </template>
