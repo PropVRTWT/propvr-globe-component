@@ -1,13 +1,14 @@
 <script setup>
-import { ref, onMounted, defineEmits, defineProps,defineExpose } from 'vue';
+import { ref, onMounted, defineEmits, defineProps, defineExpose, onUnmounted } from 'vue';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import {
   WebGLRenderer,
   Scene, PerspectiveCamera,
-  TextureLoader, PointLight,Mesh,
+  TextureLoader, PointLight, Mesh,
   Color,
-  MeshStandardMaterial, WebGLCubeRenderTarget, ACESFilmicToneMapping, EquirectangularReflectionMapping, SRGBColorSpace
+  MeshStandardMaterial, WebGLCubeRenderTarget, ACESFilmicToneMapping, EquirectangularReflectionMapping, SRGBColorSpace,
+  Cache
 } from 'three';
 import { Lensflare, LensflareElement } from 'three/examples/jsm/objects/Lensflare.js';
 import ThreeGlobe from 'three-globe';
@@ -19,14 +20,15 @@ const renderers = [new WebGLRenderer(), new CSS2DRenderer()];
 const scene = new Scene();
 const camera = new PerspectiveCamera();
 const props = defineProps(['Data', 'markerIcon', 'settings'])
-const emits = defineEmits(['emitClickData','loaderImageLoaded', 'initialAnimationEnd', 'selectedAnimationEnd','allTextureLoaded']);
+const emits = defineEmits(['emitClickData', 'loaderImageLoaded', 'initialAnimationEnd', 'selectedAnimationEnd', 'allTextureLoaded']);
 const texturePromises = [];
 let controls = 0;
+let Globe;
 
 onMounted(() => {
   renderers[0].toneMapping = ACESFilmicToneMapping;
   renderers[0].toneMappingExposure = 1.5;
-  const Globe = new ThreeGlobe()
+  Globe = new ThreeGlobe()
     .globeImageUrl('https://storagecdn.propvr.tech/KAFD_Assets%2FGlobe%2FearthTexture.jpg?alt=media')
     .htmlElementsData(props.Data)
     .htmlElement(d => {
@@ -51,13 +53,13 @@ onMounted(() => {
       el.addEventListener('click', event => handleClick(el.id));
       return el;
     });
-  
+
   texturePromises.push(
-      new Promise((resolve) => {
-        Globe.onGlobeReady(()=>{
-          resolve();
-        })
+    new Promise((resolve) => {
+      Globe.onGlobeReady(() => {
+        resolve();
       })
+    })
   );
   Globe.showAtmosphere(true);
   Globe.atmosphereColor("#c6e7f7")
@@ -71,7 +73,7 @@ onMounted(() => {
   const GlobeMaterial = globeMesh.value.material;
   const targetCube = new WebGLCubeRenderTarget(512, 512);
   // GlobeMaterial.color = new Color(0x3a228a);
-  texturePromises.push(new Promise((resolve)=>{
+  texturePromises.push(new Promise((resolve) => {
     new TextureLoader().load('https://storagecdn.propvr.tech/KAFD_Assets%2FGlobe%2FearthEmissive.jpg?alt=media', texture => {
       GlobeMaterial.emissiveMap = texture;
       GlobeMaterial.emissiveIntensity = 0.5;
@@ -80,21 +82,21 @@ onMounted(() => {
     });
   }))
 
-  texturePromises.push(new Promise((resolve)=>{
+  texturePromises.push(new Promise((resolve) => {
     new TextureLoader().load('https://storagecdn.propvr.tech/KAFD_Assets%2FGlobe%2FearthNormal.jpg?alt=media', texture => {
       GlobeMaterial.normalMap = texture;
       resolve();
     });
   }))
 
-  texturePromises.push(new Promise((resolve)=>{
+  texturePromises.push(new Promise((resolve) => {
     new TextureLoader().load('https://storagecdn.propvr.tech/KAFD_Assets%2FGlobe%2FearthRough.jpg?alt=media', texture => {
       GlobeMaterial.roughnessMap = texture;
       resolve();
     });
   }))
 
-  texturePromises.push(new Promise((resolve)=>{
+  texturePromises.push(new Promise((resolve) => {
     new TextureLoader().load("https://storagecdn.propvr.tech/KAFD_Assets%2FGlobe%2Fspaceenv.jpg?alt=media", texture => {
       // create a cube texture from the panorama
       let cubeTex = targetCube.fromEquirectangularTexture(renderers[0], texture);
@@ -103,7 +105,7 @@ onMounted(() => {
       resolve();
     })
   }))
-  
+
   GlobeMaterial.roughness = 0.5
   //GlobeMaterial.metalness=0.1
   GlobeMaterial.envMapIntensity = 2
@@ -157,7 +159,7 @@ onMounted(() => {
   Globe.setPointOfView(camera.position, Globe.position);
   controls.addEventListener('change', () => Globe.setPointOfView(camera.position, Globe.position));
 
-  
+
 
   (function animate() {
     controls.update();
@@ -167,26 +169,27 @@ onMounted(() => {
 
   //animate to city
   const handleClick = (id) => {
-        emits('emitClickData',id);
+    emits('emitClickData', id);
   }
 
   Promise.all(texturePromises).then(() => {
     console.log('All textures loaded successfully!');
-    
+
     //initial camera and marker animation
     emits("allTextureLoaded");
-  
+    startInitialAnimation()
+
   });
 
 })
 
-  const animateCameraPosition = (currentPosition, targetPosition, duration, setDistance = true) => {
-    return new Promise((resolve)=>{
-      if (!setDistance) {
-        controls.minDistance = 0;
-        controls.maxDistance = Infinity;
-      }
-      new TWEEN.Tween(currentPosition)
+const animateCameraPosition = (currentPosition, targetPosition, duration, setDistance = true) => {
+  return new Promise((resolve) => {
+    if (!setDistance) {
+      controls.minDistance = 0;
+      controls.maxDistance = Infinity;
+    }
+    new TWEEN.Tween(currentPosition)
       .to(targetPosition, duration)
       .easing(TWEEN.Easing.Sinusoidal.InOut)
       .onStart(() => {
@@ -206,58 +209,117 @@ onMounted(() => {
         controls.enabled = true;
         resolve();
       })
-    })
-  }
+  })
+}
 
-  const animateOpacity = (el, currentOpacity, targetOpacity, duration) => {
-    return new Promise((resolve)=>{
-      new TWEEN.Tween(currentOpacity)
-        .to(targetOpacity, duration)
-        .easing(TWEEN.Easing.Sinusoidal.InOut)
-        .start()
-        .onUpdate(() => {
+const animateOpacity = (el, currentOpacity, targetOpacity, duration) => {
+  return new Promise((resolve) => {
+    new TWEEN.Tween(currentOpacity)
+      .to(targetOpacity, duration)
+      .easing(TWEEN.Easing.Sinusoidal.InOut)
+      .start()
+      .onUpdate(() => {
         el.style.opacity = currentOpacity.opacity
-        })
-        .onComplete(() => {
-          el.style.opacity = targetOpacity.opacity;
-          resolve();
-        })
-    })
+      })
+      .onComplete(() => {
+        el.style.opacity = targetOpacity.opacity;
+        resolve();
+      })
+  })
 
-  }
+}
 
-function loaderImageLoaded(){
+function loaderImageLoaded() {
   emits('loaderImageLoaded')
 }
 
-const startAnimate = ()=>{
+const startAnimate = () => {
   Promise.all([
     animateCameraPosition(camera.position, { "x": 80.66770691334082, "y": 39.40691406419208, "z": 86.68052099645045 }, 2000, false),
     animateCameraPosition(controls.target, { "x": -0.14623203298954673, "y": 37.84872465037691, "z": -0.879793351262042 }, 2000, false),
     animateOpacity(globeViz.value, { opacity: 1 }, { opacity: 0 }, 2000)
-    ]).then(()=>{
-      emits('selectedAnimationEnd');
+  ]).then(() => {
+    emits('selectedAnimationEnd');
   })
 }
 
-async function startInitialAnimation(){
+async function startInitialAnimation() {
 
   Promise.all([
-      animateCameraPosition(camera.position, { x: 197.58794914248855, y: 79.45985245939976, z: 211.29395211599356 }, 2000),
-      animateCameraPosition(controls.target, { x: 0, y: 0, z: 0 }, 2000),
-      animateOpacity(svgIcon.value, { opacity: 0 }, { opacity: 1 }, 2000)]).then(()=>{
-        emits('initialAnimationEnd');
-      })
+    animateCameraPosition(camera.position, { x: 197.58794914248855, y: 79.45985245939976, z: 211.29395211599356 }, 2000),
+    animateCameraPosition(controls.target, { x: 0, y: 0, z: 0 }, 2000),
+    animateOpacity(svgIcon.value, { opacity: 0 }, { opacity: 1 }, 2000)]).then(() => {
+      emits('initialAnimationEnd');
+    })
 
 }
+
+onUnmounted(() => {
+
+
+  if (globeMesh.value) {
+    scene.traverse(function (obj) {
+      if (obj.material) {
+        obj.material.dispose();
+        if (obj.material.map) {
+          obj.material.map.dispose();
+        }
+        if (obj.material.lightMap) {
+          obj.material.lightMap.dispose();
+        }
+        if (obj.material.aoMap) {
+          obj.material.aoMap.dispose();
+        }
+        if (obj.material.emissiveMap) {
+          obj.material.emissiveMap.dispose();
+        }
+        if (obj.material.bumpMap) {
+          obj.material.bumpMap.dispose();
+        }
+        if (obj.material.normalMap) {
+          obj.material.normalMap.dispose();
+        }
+        if (obj.material.displacementMap) {
+          obj.material.displacementMap.dispose();
+        }
+        if (obj.material.roughnessMap) {
+          obj.material.roughnessMap.dispose();
+        }
+        if (obj.material.metalnessMap) {
+          obj.material.metalnessMap.dispose();
+        }
+        if (obj.material.alphaMap) {
+          obj.material.alphaMap.dispose();
+        }
+      }
+      if (obj.geometry) {
+        obj.geometry.dispose();
+        obj.geometry.attributes.color = {};
+        obj.geometry.attributes.normal = {};
+        obj.geometry.attributes.position = {};
+        obj.geometry.attributes.uv = {};
+        obj.geometry.attributes = {};
+        obj.material = {};
+      }
+    })
+  }
+
+
+  for (var elem in Cache.files) {
+    Cache.files[elem] = "";
+    Cache.remove(elem);
+  }
+
+});
 
 defineExpose({
   startAnimate,
   startInitialAnimation
 })
 
+
 </script>
 
 <template>
-    <div style="height:100%;width:100%;overflow: hidden;cursor:grab;" id="globeViz" ref="globeViz"></div>
+  <div style="height:100%;width:100%;overflow: hidden;cursor:grab;" id="globeViz" ref="globeViz"></div>
 </template>
