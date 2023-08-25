@@ -147,9 +147,13 @@ onMounted(() => {
   controls = new OrbitControls(camera, renderers[0].domElement);
   camera.position.set(131.88064239814327, 64.1848257090222, 120.89015872538002);
   controls.target.set(-13.657160256049494, 14.83606980678348, 121.60382806417424);
-  //  controls.target.set(0,0,0)
+  controls.screenSpacePanning = false;
   controls.enablePan = false;
-
+  controls.dampingFactor = 0.05;
+  controls.minPolarAngle =  1.2;
+	controls.maxPolarAngle =  1.2;
+  controls.minAzimuthAngle = -0.75;
+  controls.maxAzimuthAngle = 1.2;
   controls.enableDamping = true;
   controls.autoRotate = false;
   controls.autoRotateSpeed *= 0.25;
@@ -173,7 +177,6 @@ onMounted(() => {
   }
 
   Promise.all(texturePromises).then(() => {
-    console.log('All textures loaded successfully!');
 
     //initial camera and marker animation
     emits("allTextureLoaded");
