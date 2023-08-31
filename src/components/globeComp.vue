@@ -29,7 +29,7 @@ onMounted(() => {
   renderers[0].toneMapping = ACESFilmicToneMapping;
   renderers[0].toneMappingExposure = 1.5;
   Globe = new ThreeGlobe()
-    .globeImageUrl('https://storagecdn.propvr.tech/KAFD_Assets%2FGlobe%2FearthTexture.jpg?alt=media')
+    .globeImageUrl('/assets/globe/earthTexture.jpg')
     .htmlElementsData(props.Data)
     .htmlElement(d => {
       const el = document.createElement('div');
@@ -74,7 +74,7 @@ onMounted(() => {
   const targetCube = new WebGLCubeRenderTarget(512, 512);
   // GlobeMaterial.color = new Color(0x3a228a);
   texturePromises.push(new Promise((resolve) => {
-    new TextureLoader().load('https://storagecdn.propvr.tech/KAFD_Assets%2FGlobe%2FearthEmissive.jpg?alt=media', texture => {
+    new TextureLoader().load('/assets/globe/earthEmissive.jpg', texture => {
       GlobeMaterial.emissiveMap = texture;
       GlobeMaterial.emissiveIntensity = 0.5;
       GlobeMaterial.emissive = new Color(1, 1, 1)
@@ -83,21 +83,21 @@ onMounted(() => {
   }))
 
   texturePromises.push(new Promise((resolve) => {
-    new TextureLoader().load('https://storagecdn.propvr.tech/KAFD_Assets%2FGlobe%2FearthNormal.jpg?alt=media', texture => {
+    new TextureLoader().load('/assets/globe/earthNormal.jpg', texture => {
       GlobeMaterial.normalMap = texture;
       resolve();
     });
   }))
 
   texturePromises.push(new Promise((resolve) => {
-    new TextureLoader().load('https://storagecdn.propvr.tech/KAFD_Assets%2FGlobe%2FearthRough.jpg?alt=media', texture => {
+    new TextureLoader().load('/assets/globe/earthRough.jpg', texture => {
       GlobeMaterial.roughnessMap = texture;
       resolve();
     });
   }))
 
   texturePromises.push(new Promise((resolve) => {
-    new TextureLoader().load("https://storagecdn.propvr.tech/KAFD_Assets%2FGlobe%2Fspaceenv.jpg?alt=media", texture => {
+    new TextureLoader().load("/assets/globe/spaceenv.jpg", texture => {
       // create a cube texture from the panorama
       let cubeTex = targetCube.fromEquirectangularTexture(renderers[0], texture);
       GlobeMaterial.envMap = cubeTex.texture;
@@ -124,15 +124,15 @@ onMounted(() => {
   scene.add(Globe);
 
   const textureLoader = new TextureLoader();
-  const textureEquirec = textureLoader.load('https://storagecdn.propvr.tech/KAFD_Assets%2FGlobe%2Fspacebg.jpg?alt=media');
+  const textureEquirec = textureLoader.load('/assets/globe/spacebg.jpg');
   textureEquirec.mapping = EquirectangularReflectionMapping;
   textureEquirec.colorSpace = SRGBColorSpace;
   scene.background = textureEquirec;
 
   const sunLight = new PointLight(0xffffff, 0.2, 20000);
   const sunTextureLoader = new TextureLoader();
-  const textureFlare = sunTextureLoader.load("https://storagecdn.propvr.ai/DevAssets%2Fsun3.webp?alt=media");
-  const textureFlare0 = sunTextureLoader.load('https://storagecdn.propvr.ai/DevAssets%2Flensflare.png?alt=media');
+  const textureFlare = sunTextureLoader.load("/assets/globe/sun3.webp");
+  const textureFlare0 = sunTextureLoader.load('/assets/globe/lensflare.png');
   const lensflare = new Lensflare();
   lensflare.addElement(new LensflareElement(textureFlare, 512, 0));
   lensflare.addElement(new LensflareElement(textureFlare0, 512, 0));
