@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, defineEmits, defineProps, defineExpose, onUnmounted } from 'vue';
+import { ref, onMounted, defineEmits, defineProps, defineExpose, onUnmounted,onBeforeUnmount } from 'vue';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import {
@@ -16,16 +16,18 @@ import * as TWEEN from '@tweenjs/tween.js'
 const globeViz = ref(null);
 const globeMesh = ref();
 const svgIcon = ref();
-const renderers = [new WebGLRenderer(), new CSS2DRenderer()];
-const scene = new Scene();
-const camera = new PerspectiveCamera();
+let renderers = [new WebGLRenderer(), new CSS2DRenderer()];
+let scene = new Scene();
+let camera = new PerspectiveCamera();
 const props = defineProps(['Data', 'markerIcon', 'settings'])
 const emits = defineEmits(['emitClickData', 'loaderImageLoaded', 'initialAnimationEnd', 'selectedAnimationEnd', 'allTextureLoaded']);
 const texturePromises = [];
 let controls = 0;
 let Globe;
+let lensflare;
 
-onMounted(() => {
+
+function init(){
   renderers[0].toneMapping = ACESFilmicToneMapping;
   renderers[0].toneMappingExposure = 1.5;
   Globe = new ThreeGlobe()
@@ -54,7 +56,7 @@ onMounted(() => {
       return el;
     });
 
-  texturePromises.push(
+    texturePromises.push(
     new Promise((resolve) => {
       Globe.onGlobeReady(() => {
         resolve();
@@ -133,7 +135,7 @@ onMounted(() => {
   const sunTextureLoader = new TextureLoader();
   const textureFlare = sunTextureLoader.load("/assets/globe/sun3.webp");
   const textureFlare0 = sunTextureLoader.load('/assets/globe/lensflare.png');
-  const lensflare = new Lensflare();
+  lensflare = new Lensflare();
   lensflare.addElement(new LensflareElement(textureFlare, 512, 0));
   lensflare.addElement(new LensflareElement(textureFlare0, 512, 0));
   sunLight.position.set(250, 90, 50);
@@ -163,28 +165,30 @@ onMounted(() => {
   Globe.setPointOfView(camera.position, Globe.position);
   controls.addEventListener('change', () => Globe.setPointOfView(camera.position, Globe.position));
 
-
-
-  (function animate() {
-    controls.update();
-    renderers.forEach(r => r.render(scene, camera));
-    requestAnimationFrame(animate); // enable mouse drag
-  })();
-
-  //animate to city
-  const handleClick = (id) => {
-    emits('emitClickData', id);
-  }
-
   Promise.all(texturePromises).then(() => {
-
     //initial camera and marker animation
     emits("allTextureLoaded");
     startInitialAnimation()
-
   });
 
+}
+
+function animate(){
+  controls.update();
+  renderers.forEach(r => r.render(scene, camera));
+  requestAnimationFrame(animate); // enable mouse drag
+
+}
+onMounted(() => {
+ 
+  init();
+  animate();
+
 })
+
+const handleClick = (id) => {
+    emits('emitClickData', id);
+}
 
 const animateCameraPosition = (currentPosition, targetPosition, duration, setDistance = true) => {
   return new Promise((resolve) => {
@@ -257,8 +261,8 @@ async function startInitialAnimation() {
 
 }
 
-onUnmounted(() => {
 
+onBeforeUnmount(()=>{
 
   if (globeMesh.value) {
     scene.traverse(function (obj) {
@@ -307,11 +311,34 @@ onUnmounted(() => {
     })
   }
 
-
   for (var elem in Cache.files) {
     Cache.files[elem] = "";
     Cache.remove(elem);
   }
+
+  cancelAnimationFrame(animate);
+
+  renderers[0].dispose();
+  controls.dispose();
+  TWEEN.removeAll();
+  Globe._destructor();
+  lensflare.dispose();
+
+  camera = null;
+  scene = null;
+  Globe = null;
+  lensflare = null;
+  renderers = [];
+  globeMesh.value = null;
+  globeMesh.value = null;
+  svgIcon.value = null;
+  console.log("before Unmounted")
+})
+
+
+onUnmounted(() => {
+
+  console.log("UnMounted")
 
 });
 

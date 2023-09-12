@@ -2,6 +2,7 @@
 import globeComp from './components/globeComp.vue'
 import { ref } from 'vue';
 const markerIcon = ref(false);
+const flag = ref(false);
 
 let requestOptions = {
       method: "GET",
@@ -44,9 +45,9 @@ function imageloaded(){
 
 <template>
   <div style="position: absolute;top:0px">
-     <button @click="markerIcon=null" >Text</button>
+     <button @click="flag=!flag" >Text</button>
   </div>
-  <globeComp v-if="markerIcon" :Data="gData" :settings="settings" :markerIcon="markerIcon" @loaderImageLoaded="imageloaded"  @emitClickData="emitClickData" style="height:100%;width:100%;overflow: hidden" />
+  <globeComp v-if="markerIcon && flag" :Data="gData" :settings="settings" :markerIcon="markerIcon" @loaderImageLoaded="imageloaded"  @emitClickData="emitClickData" style="height:100%;width:100%;overflow: hidden" />
 </template>
 
 <style>
