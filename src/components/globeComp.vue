@@ -171,6 +171,8 @@ function init(){
     startInitialAnimation()
   });
 
+  window.addEventListener('resize', onWindowResize, false);
+
 }
 
 function animate(){
@@ -332,6 +334,9 @@ onBeforeUnmount(()=>{
   globeMesh.value = null;
   globeMesh.value = null;
   svgIcon.value = null;
+
+  window.removeEventListener('resize', onWindowResize);
+
   console.log("before Unmounted")
 })
 
@@ -347,6 +352,21 @@ defineExpose({
   startInitialAnimation
 })
 
+function onWindowResize() {
+
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+
+  renderers.forEach((r, idx) => {
+    r.setSize(window.innerWidth, window.innerHeight);
+    if (idx > 0) {
+      r.domElement.style.position = 'absolute';
+      r.domElement.style.top = '0px';
+      r.domElement.style.pointerEvents = 'none';
+      r.domElement.style.cursor = 'pointer'
+    }
+  });
+} 
 
 </script>
 
