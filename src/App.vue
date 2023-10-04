@@ -47,7 +47,7 @@ function imageloaded(){
   <div style="position: absolute;top:0px">
      <button @click="flag=!flag" >Text</button>
   </div>
-  <globeComp v-if="markerIcon && flag" :Data="gData" :settings="settings" :markerIcon="markerIcon" @loaderImageLoaded="imageloaded"  @emitClickData="emitClickData" style="height:100%;width:100%;overflow: hidden" />
+  <globeComp v-if="markerIcon && flag" :Data="gData" :isMobile="true" :settings="settings" :markerIcon="markerIcon" @loaderImageLoaded="imageloaded"  @emitClickData="emitClickData" style="height:100%;width:100%;overflow: hidden" />
 </template>
 
 <style>

@@ -19,13 +19,12 @@ const svgIcon = ref();
 let renderers = [new WebGLRenderer(), new CSS2DRenderer()];
 let scene = new Scene();
 let camera = new PerspectiveCamera();
-const props = defineProps(['Data', 'markerIcon', 'settings'])
+const props = defineProps(['Data', 'markerIcon', 'settings','isMobile'])
 const emits = defineEmits(['emitClickData', 'loaderImageLoaded', 'initialAnimationEnd', 'selectedAnimationEnd', 'allTextureLoaded']);
 const texturePromises = [];
 let controls = 0;
 let Globe;
 let lensflare;
-
 
 function init(){
   renderers[0].toneMapping = ACESFilmicToneMapping;
@@ -159,7 +158,7 @@ function init(){
   controls.enableDamping = true;
   controls.autoRotate = false;
   controls.autoRotateSpeed *= 0.25;
-
+  
 
 
   Globe.setPointOfView(camera.position, Globe.position);
@@ -208,8 +207,8 @@ const animateCameraPosition = (currentPosition, targetPosition, duration, setDis
       .onComplete(() => {
         //controls.target.set(targetPosition.x, targetPosition.y, targetPosition.z - 0.001);
         if (setDistance) {
-          controls.minDistance = 300;
-          controls.maxDistance = 280;
+          controls.minDistance = props.isMobile?490:300;
+          controls.maxDistance = props.isMobile?470:280;
         }
         else {
           controls.minDistance = 0;
@@ -255,7 +254,7 @@ const startAnimate = () => {
 async function startInitialAnimation() {
 
   Promise.all([
-    animateCameraPosition(camera.position, { x: 197.58794914248855, y: 79.45985245939976, z: 211.29395211599356 }, 2000),
+    animateCameraPosition(camera.position, { x: 197.58794914248855, y: 79.45985245939976, z: props.isMobile?440.29395211599356:211.29395211599356 }, 2000),
     animateCameraPosition(controls.target, { x: 0, y: 0, z: 0 }, 2000),
     animateOpacity(svgIcon.value, { opacity: 0 }, { opacity: 1 }, 2000)]).then(() => {
       emits('initialAnimationEnd');
