@@ -1,7 +1,7 @@
 {
   "name": "propvr-globe-component",
   "public": true,
-  "version": "0.0.16",
+  "version": "0.0.17",
   "type": "module",
   "files": [
     "dist"
